@@ -4,6 +4,13 @@
 #define LEDPIN 6
 #define NUMLEDS 30 * 5
 
+#define POTPIN A0
+
+#define RAINBOW 0
+#define SOLID 1
+
+#define MODE SOLID
+
 extern const uint8_t gamma[];
 
 CRGB leds[NUMLEDS];
@@ -22,18 +29,28 @@ void setup() {
 
 void loop() {
 
-    // this is much smoother than using fill_rainbow
-    for (uint16_t led = 0; led < NUMLEDS; led++) {
-        color.hue = map(led, 0, NUMLEDS, 0, 255) + startHue;
-        leds[led] = color;
+    if (MODE == RAINBOW) {
+        // this is much smoother than using fill_rainbow
+        for (uint16_t led = 0; led < NUMLEDS; led++) {
+            color.hue = map(led, 0, NUMLEDS, 0, 255) + startHue;
+            leds[led] = color;
+        }
+
+        FastLED.show();
+
+        FastLED.delay(20);
+        startHue--;
+    } else if (MODE == SOLID) {
+        uint8_t hue = readPotHue();
+        fill_solid(&leds[0], NUMLEDS, CHSV(hue, 255, 255));
+        FastLED.show();
+        FastLED.delay(20);
     }
+}
 
-    // fill_solid(&leds[0], NUMLEDS, CHSV(96, 255, 255));
-
-    FastLED.show();
-
-    FastLED.delay(20);
-    startHue--;
+uint8_t readPotHue() {
+    uint16_t rawVal = analogRead(POTPIN);
+    return map(rawVal, 0, 1023, 0, 255);
 }
 
 const PROGMEM uint8_t gamma[] = {
