@@ -4,7 +4,10 @@
 #define LEDPIN 6
 #define NUMLEDS 30 * 5
 
-#define POTPIN A0
+// #define POTPIN A0
+
+#define ROTARY_PINA 2
+#define ROTARY_PINB 3
 
 #define RAINBOW 0
 #define SOLID 1
@@ -19,39 +22,65 @@ CHSV color = CHSV(0, 255, 255);
 
 uint8_t startHue = 0;
 
+uint8_t counter = 0;
+uint8_t aState;
+uint8_t aLastState;
+
 void setup() {
+    pinMode(ROTARY_PINA, INPUT);
+    pinMode(ROTARY_PINB, INPUT);
+
+    aLastState = digitalRead(ROTARY_PINA);
+
     FastLED.addLeds<LEDTYPE, LEDPIN, GRB>(leds, NUMLEDS);
 
     FastLED.setDither(0);
 
-    FastLED.setBrightness(pgm_read_byte(&gamma[255]));
+    FastLED.setBrightness(pgm_read_byte(&gamma[127]));
+
+    // Serial.begin(9600);
 }
 
 void loop() {
 
-    if (MODE == RAINBOW) {
-        // this is much smoother than using fill_rainbow
-        for (uint16_t led = 0; led < NUMLEDS; led++) {
-            color.hue = map(led, 0, NUMLEDS, 0, 255) + startHue;
-            leds[led] = color;
+    aState = digitalRead(ROTARY_PINA);
+
+    if (aState == 1 && aState != aLastState) {
+        if (aState != digitalRead(ROTARY_PINB)) {
+            counter += 2;
+        } else {
+            counter -= 2;
         }
-
-        FastLED.show();
-
-        FastLED.delay(20);
-        startHue--;
-    } else if (MODE == SOLID) {
-        uint8_t hue = readPotHue();
-        fill_solid(&leds[0], NUMLEDS, CHSV(hue, 255, 255));
-        FastLED.show();
-        FastLED.delay(20);
+        // Serial.println(counter);
     }
+    aLastState = aState;
+
+    fill_solid(&leds[0], NUMLEDS, CHSV(counter, 255, 255));
+    FastLED.show();
+
+    // if (MODE == RAINBOW) {
+    //     // this is much smoother than using fill_rainbow
+    //     for (uint16_t led = 0; led < NUMLEDS; led++) {
+    //         color.hue = map(led, 0, NUMLEDS, 0, 255) + startHue;
+    //         leds[led] = color;
+    //     }
+
+    //     FastLED.show();
+
+    //     FastLED.delay(20);
+    //     startHue--;
+    // } else if (MODE == SOLID) {
+    //     uint8_t hue = readPotHue();
+    //     fill_solid(&leds[0], NUMLEDS, CHSV(hue, 255, 255));
+    //     FastLED.show();
+    //     FastLED.delay(20);
+    // }
 }
 
-uint8_t readPotHue() {
-    uint16_t rawVal = analogRead(POTPIN);
-    return map(rawVal, 0, 1023, 0, 255);
-}
+// uint8_t readPotHue() {
+//     uint16_t rawVal = analogRead(POTPIN);
+//     return map(rawVal, 0, 1023, 0, 255);
+// }
 
 const PROGMEM uint8_t gamma[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
