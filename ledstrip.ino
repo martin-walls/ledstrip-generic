@@ -22,7 +22,7 @@ CHSV color = CHSV(0, 255, 255);
 
 uint8_t startHue = 0;
 
-uint8_t counter = 0;
+uint8_t hue = 200;
 uint8_t aState;
 uint8_t aLastState;
 
@@ -38,6 +38,9 @@ void setup() {
 
     FastLED.setBrightness(pgm_read_byte(&gamma[127]));
 
+    fill_solid(&leds[0], NUMLEDS, CHSV(hue, 255, 255));
+    FastLED.show();
+
     // Serial.begin(9600);
 }
 
@@ -47,16 +50,15 @@ void loop() {
 
     if (aState == 1 && aState != aLastState) {
         if (aState != digitalRead(ROTARY_PINB)) {
-            counter += 2;
+            hue += 2;
         } else {
-            counter -= 2;
+            hue -= 2;
         }
         // Serial.println(counter);
+        fill_solid(&leds[0], NUMLEDS, CHSV(hue, 255, 255));
+        FastLED.show();
     }
     aLastState = aState;
-
-    fill_solid(&leds[0], NUMLEDS, CHSV(counter, 255, 255));
-    FastLED.show();
 
     // if (MODE == RAINBOW) {
     //     // this is much smoother than using fill_rainbow
