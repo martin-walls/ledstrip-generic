@@ -2,7 +2,7 @@
 
 #define LEDTYPE WS2812B
 #define LEDPIN 6
-#define NUMLEDS 30 * 5
+#define NUMLEDS 7
 
 // #define POTPIN A0
 
